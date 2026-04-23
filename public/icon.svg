@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0f172a"/>
+  <path d="M256 420c-10 0-18-6-22-14l-72-132c-14-26-10-60 12-80 22-20 56-22 80-4 6 4 12 12 12 12s6-8 12-12c24-18 58-16 80 4 22 20 26 54 12 80l-72 132c-4 8-12 14-22 14-2 0-8 0-10 0z" fill="#ef4444"/>
+  <text x="256" y="256" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="82" font-weight="800" fill="#f8fafc" letter-spacing="2">BP</text>
+</svg>
