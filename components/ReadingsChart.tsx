@@ -5,6 +5,7 @@ import {
   Legend,
   Line,
   LineChart,
+  ReferenceArea,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -12,6 +13,39 @@ import {
   YAxis,
 } from "recharts";
 import { dailyAverages, type Reading, type Thresholds } from "@/lib/readings";
+
+const OK = "#16a34a";
+const ELEVATED = "#d97706";
+const ALARMING = "#dc2626";
+
+const dotColor = (v: number, lo: number, hi: number) =>
+  v >= hi ? ALARMING : v >= lo ? ELEVATED : OK;
+
+type DotProps = {
+  cx?: number;
+  cy?: number;
+  key?: string;
+  payload?: { sys: number; dia: number };
+};
+
+function makeDot(metric: "sys" | "dia", lo: number, hi: number, r: number) {
+  return (props: DotProps) => {
+    const { cx, cy, payload, key } = props;
+    if (cx == null || cy == null || !payload) return null;
+    const fill = dotColor(payload[metric], lo, hi);
+    return (
+      <circle
+        key={key}
+        cx={cx}
+        cy={cy}
+        r={r}
+        fill={fill}
+        stroke="#fff"
+        strokeWidth={1}
+      />
+    );
+  };
+}
 
 export default function ReadingsChart({
   readings,
@@ -70,27 +104,29 @@ export default function ReadingsChart({
               labelFormatter={(d) => `Date: ${d}`}
             />
             <Legend wrapperStyle={{ fontSize: 11 }} iconSize={10} />
-            <ReferenceLine
-              y={thresholds.alarming.sys}
-              stroke="#dc2626"
-              strokeDasharray="4 4"
+            <ReferenceArea
+              y1={thresholds.alarming.sys}
+              y2={yMax}
+              fill="#fee2e2"
+              fillOpacity={0.5}
               ifOverflow="extendDomain"
             />
-            <ReferenceLine
-              y={thresholds.elevated.sys}
-              stroke="#d97706"
-              strokeDasharray="4 4"
+            <ReferenceArea
+              y1={thresholds.elevated.sys}
+              y2={thresholds.alarming.sys}
+              fill="#fef3c7"
+              fillOpacity={0.5}
               ifOverflow="extendDomain"
             />
             <ReferenceLine
               y={thresholds.alarming.dia}
-              stroke="#dc2626"
+              stroke={ALARMING}
               strokeDasharray="4 4"
               ifOverflow="extendDomain"
             />
             <ReferenceLine
               y={thresholds.elevated.dia}
-              stroke="#d97706"
+              stroke={ELEVATED}
               strokeDasharray="4 4"
               ifOverflow="extendDomain"
             />
@@ -100,28 +136,48 @@ export default function ReadingsChart({
               name="SYS"
               stroke="#2563eb"
               strokeWidth={2}
-              dot={{ r: 3 }}
-              activeDot={{ r: 5 }}
+              dot={makeDot(
+                "sys",
+                thresholds.elevated.sys,
+                thresholds.alarming.sys,
+                3,
+              )}
+              activeDot={makeDot(
+                "sys",
+                thresholds.elevated.sys,
+                thresholds.alarming.sys,
+                5,
+              )}
               isAnimationActive={false}
             />
             <Line
               type="monotone"
               dataKey="dia"
               name="DIA"
-              stroke="#dc2626"
+              stroke="#0891b2"
               strokeWidth={2}
-              dot={{ r: 3 }}
-              activeDot={{ r: 5 }}
+              dot={makeDot(
+                "dia",
+                thresholds.elevated.dia,
+                thresholds.alarming.dia,
+                3,
+              )}
+              activeDot={makeDot(
+                "dia",
+                thresholds.elevated.dia,
+                thresholds.alarming.dia,
+                5,
+              )}
               isAnimationActive={false}
             />
             <Line
               type="monotone"
               dataKey="pulse"
               name="Pulse"
-              stroke="#f59e0b"
+              stroke="#7c3aed"
               strokeWidth={2}
-              dot={{ r: 3 }}
-              activeDot={{ r: 5 }}
+              dot={{ r: 3, fill: "#7c3aed", stroke: "#fff", strokeWidth: 1 }}
+              activeDot={{ r: 5, fill: "#7c3aed", stroke: "#fff", strokeWidth: 1 }}
               isAnimationActive={false}
             />
           </LineChart>
