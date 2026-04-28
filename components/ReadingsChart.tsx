@@ -21,17 +21,16 @@ const ALARMING = "#dc2626";
 const dotColor = (v: number, lo: number, hi: number) =>
   v >= hi ? ALARMING : v >= lo ? ELEVATED : OK;
 
-type DotProps = {
-  cx?: number;
-  cy?: number;
-  key?: string;
-  payload?: { sys: number; dia: number };
-};
-
 function makeDot(metric: "sys" | "dia", lo: number, hi: number, r: number) {
-  return (props: DotProps) => {
-    const { cx, cy, payload, key } = props;
-    if (cx == null || cy == null || !payload) return null;
+  return (props: unknown) => {
+    const p = props as {
+      cx?: number;
+      cy?: number;
+      key?: string;
+      payload?: { sys: number; dia: number };
+    };
+    const { cx, cy, payload, key } = p;
+    if (cx == null || cy == null || !payload) return <g key={key} />;
     const fill = dotColor(payload[metric], lo, hi);
     return (
       <circle
