@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { todayISO } from "@/lib/readings";
 
 type Input = { date: string; sys: number; dia: number; pulse: number };
@@ -10,16 +10,24 @@ export default function ReadingForm({
 }: {
   onSubmit: (r: Input) => Promise<void>;
 }) {
-  const [date, setDate] = useState(todayISO());
+  const [today, setToday] = useState("");
+  const [date, setDate] = useState("");
   const [sys, setSys] = useState("");
   const [dia, setDia] = useState("");
   const [pulse, setPulse] = useState("");
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    const t = todayISO();
+    setToday(t);
+    setDate(t);
+  }, []);
+
   const nSys = Number(sys);
   const nDia = Number(dia);
   const nPulse = Number(pulse);
   const valid =
+    date !== "" &&
     Number.isFinite(nSys) &&
     nSys > 0 &&
     Number.isFinite(nDia) &&
@@ -55,7 +63,7 @@ export default function ReadingForm({
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          max={todayISO()}
+          max={today}
           className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-base"
         />
       </label>
