@@ -138,7 +138,7 @@
   "thresholds": {
     "elevated": {
       "sys": 125,
-      "dia": 85
+      "dia": 80
     },
     "alarming": {
       "sys": 140,
