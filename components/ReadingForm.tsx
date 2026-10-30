@@ -16,6 +16,7 @@ export default function ReadingForm({
   const [dia, setDia] = useState("");
   const [pulse, setPulse] = useState("");
   const [saving, setSaving] = useState(false);
+  const sysRef = useRef<HTMLInputElement>(null);
   const diaRef = useRef<HTMLInputElement>(null);
   const pulseRef = useRef<HTMLInputElement>(null);
 
@@ -74,6 +75,7 @@ export default function ReadingForm({
           label="SYS"
           value={sys}
           onChange={setSys}
+          inputRef={sysRef}
           onComplete={() => diaRef.current?.focus()}
         />
         <NumField
@@ -82,12 +84,20 @@ export default function ReadingForm({
           onChange={setDia}
           inputRef={diaRef}
           onComplete={() => pulseRef.current?.focus()}
+          onBackspaceEmpty={() => {
+            setSys((v) => v.slice(0, -1));
+            sysRef.current?.focus();
+          }}
         />
         <NumField
           label="Pulse"
           value={pulse}
           onChange={setPulse}
           inputRef={pulseRef}
+          onBackspaceEmpty={() => {
+            setDia((v) => v.slice(0, -1));
+            diaRef.current?.focus();
+          }}
         />
       </div>
       <button
@@ -112,12 +122,14 @@ function NumField({
   value,
   onChange,
   onComplete,
+  onBackspaceEmpty,
   inputRef,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   onComplete?: () => void;
+  onBackspaceEmpty?: () => void;
   inputRef?: React.Ref<HTMLInputElement>;
 }) {
   return (
@@ -132,6 +144,13 @@ function NumField({
         autoComplete="off"
         ref={inputRef}
         value={value}
+        onKeyDown={(e) => {
+          // Backspace in an empty field deletes the last digit of the previous one.
+          if (e.key === "Backspace" && value === "" && onBackspaceEmpty) {
+            e.preventDefault();
+            onBackspaceEmpty();
+          }
+        }}
         onChange={(e) => {
           const next = e.target.value.replace(/[^0-9]/g, "").slice(0, 3);
           onChange(next);
