@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { todayISO } from "@/lib/readings";
 
 type Input = { date: string; sys: number; dia: number; pulse: number };
@@ -16,6 +16,8 @@ export default function ReadingForm({
   const [dia, setDia] = useState("");
   const [pulse, setPulse] = useState("");
   const [saving, setSaving] = useState(false);
+  const diaRef = useRef<HTMLInputElement>(null);
+  const pulseRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const t = todayISO();
@@ -68,9 +70,25 @@ export default function ReadingForm({
         />
       </label>
       <div className="grid grid-cols-3 gap-2">
-        <NumField label="SYS" value={sys} onChange={setSys} />
-        <NumField label="DIA" value={dia} onChange={setDia} />
-        <NumField label="Pulse" value={pulse} onChange={setPulse} />
+        <NumField
+          label="SYS"
+          value={sys}
+          onChange={setSys}
+          onComplete={() => diaRef.current?.focus()}
+        />
+        <NumField
+          label="DIA"
+          value={dia}
+          onChange={setDia}
+          inputRef={diaRef}
+          onComplete={() => pulseRef.current?.focus()}
+        />
+        <NumField
+          label="Pulse"
+          value={pulse}
+          onChange={setPulse}
+          inputRef={pulseRef}
+        />
       </div>
       <button
         type="submit"
@@ -83,14 +101,24 @@ export default function ReadingForm({
   );
 }
 
+// A reading is complete at 3 digits, or at 2 digits when it can't be the start
+// of a 3-digit value (first digit 3-9, e.g. DIA 80 or pulse 72, not SYS 12x).
+function isComplete(v: string) {
+  return v.length >= 3 || (v.length === 2 && Number(v[0]) >= 3);
+}
+
 function NumField({
   label,
   value,
   onChange,
+  onComplete,
+  inputRef,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  onComplete?: () => void;
+  inputRef?: React.Ref<HTMLInputElement>;
 }) {
   return (
     <label className="block">
@@ -102,8 +130,14 @@ function NumField({
         inputMode="numeric"
         pattern="[0-9]*"
         autoComplete="off"
+        ref={inputRef}
         value={value}
-        onChange={(e) => onChange(e.target.value.replace(/[^0-9]/g, "").slice(0, 3))}
+        onChange={(e) => {
+          const next = e.target.value.replace(/[^0-9]/g, "").slice(0, 3);
+          onChange(next);
+          // Only advance when typing forward, so backspacing doesn't jump away.
+          if (next.length > value.length && isComplete(next)) onComplete?.();
+        }}
         className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-center text-xl font-semibold tabular-nums"
       />
     </label>
